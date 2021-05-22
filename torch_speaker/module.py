@@ -1,19 +1,20 @@
-import numpy as np
-
-import torch
-from torch.nn import functional as F
-from torch.utils.data import DataLoader
-from pytorch_lightning import LightningModule
-
-from tqdm import tqdm
 import copy
 from collections import OrderedDict
 
+import numpy as np
+import torch
+from pytorch_lightning import LightningModule
+from torch.nn import functional as F
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
 import torch_speaker.audio as audio
-from torch_speaker.audio import Train_Dataset, Evaluation_Dataset
 import torch_speaker.backbone as backbone
 import torch_speaker.loss as loss
 import torch_speaker.score as score
+from torch_speaker.audio import Evaluation_Dataset, Train_Dataset
+from torch_speaker.utils import count_spk_number
+
 
 class Task(LightningModule):
     def __init__(self, **kwargs):
@@ -26,9 +27,11 @@ class Task(LightningModule):
 
         # 2. backbone
         backbone_name = self.hparams.backbone.pop('name')
-        self.backbone = getattr(backbone, backbone_name)(**self.hparams.backbone)
+        self.backbone = getattr(backbone, backbone_name)(
+            **self.hparams.backbone)
 
         # 3. compute loss function for gradient desent
+        self.hparams.loss.num_classes = count_spk_number(self.hparams.train_csv)
         loss_name = self.hparams.loss.pop('name')
         self.loss = getattr(loss, loss_name)(**self.hparams.loss)
 
@@ -47,67 +50,106 @@ class Task(LightningModule):
     def training_step(self, batch, batch_idx):
         waveform, label = batch
         loss, acc = self(waveform, label)
-        self.log('train_loss', loss)
-        self.log('train_acc', acc)
+        self.log('train_loss', loss, prog_bar=True)
+        self.log('train_acc', acc, prog_bar=True)
         return loss
 
     def train_dataloader(self):
-        train_dataset = Train_Dataset(self.hparams.train_csv, self.hparams.second)
+        train_dataset = Train_Dataset(
+            data_list_path=self.hparams.train_csv, 
+			second=self.hparams.second,
+			spk_utt=self.hparams.spk_utt,
+			num_per_speaker=self.hparams.num_per_speaker
+			)
+
         loader = torch.utils.data.DataLoader(
-                train_dataset,
-                shuffle=True,
-                batch_size=self.hparams.batch_size,
-                num_workers=self.hparams.num_workers,
-                pin_memory=True,
-                drop_last=False,
-                )
+            train_dataset,
+            shuffle=True,
+            num_workers=self.hparams.num_workers,
+            batch_size=self.hparams.batch_size,
+            pin_memory=True,
+            drop_last=False,
+        )
         return loader
 
-    def evaluation(self):
-        trials = np.loadtxt(self.hparams.trial_path, str)
-        labels = trials.T[0].astype(int)
+    def on_test_epoch_start(self):
+        self.index_mapping = {}
+        self.eval_vectors = []
 
+    def on_validation_epoch_start(self):
+        self.on_test_epoch_start()
+
+    def test_step(self, batch, batch_idx):
+        x, path = batch
+        path = str(path[0])
+        x = self.extract_embedding(x)
+        x = x.cpu().detach().numpy()[0]
+        self.eval_vectors.append(x)
+        self.index_mapping[path] = batch_idx
+
+    def validation_step(self, batch, batch_idx):
+        self.test_step(batch, batch_idx)
+
+    def test_epoch_end(self, outputs):
+        labels, scores = score.cosine_score(
+            self.trials, self.index_mapping, self.eval_vectors)
+        EER, threshold = score.compute_eer(labels, scores)
+        print("\nEER: {:.2f}% with threshold {:.2f}".format(EER*100, threshold))
+        self.log("cosine_EER(%)", EER*100)
+
+        minDCF, threshold = score.compute_minDCF(labels, scores, p_target=0.01)
+        print("minDCF(10-2): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
+        self.log("cosine_minDCF(10-2)", minDCF)
+
+        minDCF, threshold = score.compute_minDCF(labels, scores, p_target=0.001)
+        print("minDCF(10-3): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
+        self.log("cosine_minDCF(10-3)", minDCF)
+
+    def validation_epoch_end(self, outputs):
+        self.test_epoch_end(outputs)
+
+    def test_dataloader(self):
+        print("trial for evaluation: ", self.hparams.trial_path)
+        trials = np.loadtxt(self.hparams.trial_path, str)
+        self.trials = trials
         eval_path = np.unique(np.concatenate((trials.T[1], trials.T[2])))
-        print("number of enroll: {}".format(len(trials.T[1])))
-        print("number of test: {}".format(len(trials.T[2])))
+        print("number of enroll: {}".format(len(set(trials.T[1]))))
+        print("number of test: {}".format(len(set(trials.T[2]))))
         print("number of evaluation: {}".format(len(eval_path)))
         eval_dataset = Evaluation_Dataset(eval_path)
-        loader = torch.utils.data.DataLoader(eval_dataset, shuffle=False, batch_size=1)
-        index_mapping = {}
-        eval_vectors = [ None for _ in range(len(loader))]
-        for idx, x in enumerate(tqdm(loader)):
-            x = x.cuda()
-            x = self.extract_embedding(x)
-            x = x.cpu().detach().numpy()[0]
-            index_mapping[eval_path[idx]] = idx
-            eval_vectors[idx] = x
+        loader = torch.utils.data.DataLoader(eval_dataset,
+                                             num_workers=self.hparams.num_workers,
+                                             shuffle=False, batch_size=1)
+        return loader
 
-        eer, th = score.cosine_score(trials, index_mapping, eval_vectors)
-        print(eer)
- 
+    def val_dataloader(self):
+        return self.test_dataloader()
+
     def configure_optimizers(self):
         optim_name = self.hparams.optim.pop('name')
         build_optimizer = getattr(torch.optim, optim_name)
         optimizer_cfg = copy.deepcopy(self.hparams.optim)
         optimizer = build_optimizer(params=self.parameters(), **optimizer_cfg)
-        print("init {} optimizer with {}".format(optim_name, dict(optimizer_cfg)))
+        print("init {} optimizer with {}".format(
+            optim_name, dict(optimizer_cfg)))
 
         schedule_cfg = copy.deepcopy(self.hparams.schedule)
         schedule_name = schedule_cfg.pop('name')
         build_scheduler = getattr(torch.optim.lr_scheduler, schedule_name)
         lr_scheduler = build_scheduler(optimizer=optimizer, **schedule_cfg)
-        print("init {} lr_scheduler with {}".format(schedule_name, dict(schedule_cfg)))
+        print("init {} lr_scheduler with {}".format(
+            schedule_name, dict(schedule_cfg)))
 
         return [optimizer], [lr_scheduler]
 
     def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_idx,
-                   optimizer_closure, on_tpu, using_native_amp, using_lbfgs):
+                       optimizer_closure, on_tpu, using_native_amp, using_lbfgs):
         # warm up learning_rate
         if self.trainer.global_step < self.hparams.warmup_step:
-            lr_scale = min(1., float(self.trainer.global_step + 1) / float(self.hparams.warmup_step))
+            lr_scale = min(1., float(self.trainer.global_step +
+                           1) / float(self.hparams.warmup_step))
             for idx, pg in enumerate(optimizer.param_groups):
                 pg['lr'] = lr_scale * self.hparams.optim.lr
         # update params
         optimizer.step(closure=optimizer_closure)
         optimizer.zero_grad()
-

@@ -1,8 +1,8 @@
 ## Data Preparation
 
 ```
-ln -s ${voxceleb1_path}/vox1_dev_wav/* data/train/
-ln -s ${voxceleb2_path}/dev/aac/* data/train
+ln -s your_voxceleb1_path/vox1_dev_wav/* data/train/
+ln -s your_voxceleb2_path/dev/aac/* data/train
 
 wget https://openslr.magicdatatech.com/resources/49/voxceleb1_test_v2.txt
 mv voxceleb1_test_v2.txt data/voxceleb1_test_v2.txt
@@ -22,12 +22,12 @@ python3 scripts/format_trials.py \
 
 ```
 python3 tools/train.py \
-    --config ${yaml_path}
+    --config your_yaml_path
 ```
 
 ## Evaluation
 
 ```
 python3 evaluate.py \
-    --config ${yaml_path}
+    --config your_yaml_path
 ```

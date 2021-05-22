@@ -9,8 +9,16 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, Ca
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='train config file path', default="config/cnc_baseline.yaml")
+    parser.add_argument('--checkpoint_path', type=str, help='checkpoint file path', default=None)
+    parser.add_argument('--trial_path', type=str, help='trial file path', default=None)
+
     args = parser.parse_args()
     load_config(cfg, args.config)
+    cfg.trainer.gpus = 1
+    if args.checkpoint_path is not None:
+        cfg.checkpoint_path = args.checkpoint_path
+    if args.trial_path is not None:
+        cfg.trial_path = args.trial_path
 
     model = Task(**cfg)
     if cfg.checkpoint_path is not None:
@@ -26,7 +34,6 @@ if __name__ == "__main__":
         model.load_state_dict(state_dict, strict=False)
         print("initial parameter from pretrain model {}".format(cfg.checkpoint_path))
         print("keep_loss_weight {}".format(cfg.keep_loss_weight))
-
-    model.cuda()
-    model.evaluation()
+    trainer = Trainer(default_root_dir=cfg.workspace, **cfg.trainer)
+    trainer.test(model)
  

@@ -1,6 +1,4 @@
-*.egg-info
 meta
-score/
 .wav
 lightning_logs
 *.ckpt

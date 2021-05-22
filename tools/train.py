@@ -1,20 +1,27 @@
 import argparse
-import torch
+import os
 
-from torch_speaker.utils import cfg, load_config
-from torch_speaker.module import Task
+import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, Callback
+from pytorch_lightning.callbacks import (Callback, LearningRateMonitor,
+                                         ModelCheckpoint)
+from pytorch_lightning.loggers import CSVLogger
+
+from torch_speaker.module import Task
+from torch_speaker.utils import cfg, load_config
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', help='train config file path', default="config/cnc_baseline.yaml")
+    parser.add_argument('--config', help='train config file path',
+                        default="config/cnc_baseline.yaml")
     args = parser.parse_args()
     load_config(cfg, args.config)
 
     model = Task(**cfg)
     if cfg.checkpoint_path is not None:
-        state_dict = torch.load(cfg.checkpoint_path, map_location="cpu")["state_dict"]
+        state_dict = torch.load(cfg.checkpoint_path, map_location="cpu")[
+            "state_dict"]
         # pop loss Function parameter
         loss_weights = []
         if cfg.keep_loss_weight is False:
@@ -28,8 +35,10 @@ if __name__ == "__main__":
         print("keep_loss_weight {}".format(cfg.keep_loss_weight))
 
     checkpoint_callback = ModelCheckpoint(monitor='train_loss', save_top_k=cfg.save_top_k,
-            filename="{epoch}_{train_loss:.2f}", dirpath=cfg.workspace)
+                                          filename="{epoch}_{train_loss:.2f}", dirpath=cfg.workspace)
     lr_monitor = LearningRateMonitor(logging_interval='step')
-    trainer = Trainer(callbacks=[checkpoint_callback], default_root_dir=cfg.workspace, **cfg.trainer)
+    trainer = Trainer(callbacks=[checkpoint_callback, lr_monitor],
+					  num_sanity_val_steps=-1,
+					  reload_dataloaders_every_epoch=True,
+                      default_root_dir=cfg.workspace, **cfg.trainer)
     trainer.fit(model)
-

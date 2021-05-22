@@ -19,6 +19,7 @@ class amsoftmax(nn.Module):
         nn.init.xavier_normal_(self.W, gain=1)
 
         print('Initialised AM-Softmax m=%.3f s=%.3f'%(self.m, self.s))
+        print('Embedding dim is {}, number of speakers is {}'.format(embedding_dim, num_classes))
 
     def forward(self, x, label=None):
         assert len(x.shape) == 3
