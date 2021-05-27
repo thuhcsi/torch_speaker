@@ -1,9 +1,10 @@
 meta
-.wav
+*.wav
 lightning_logs
 *.ckpt
 *.pt
 *.lst
+*.txt
 data/
 
 # Byte-compiled / optimized / DLL files

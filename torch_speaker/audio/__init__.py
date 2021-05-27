@@ -14,3 +14,4 @@
 
 from .feature import Mel_Spectrogram, Spectrogram, Multi_Resolution_Mel_Spectrogram
 from .dataset_loader import Train_Dataset, Evaluation_Dataset
+from .augment import SpecAugment

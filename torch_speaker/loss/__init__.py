@@ -14,3 +14,4 @@
 
 from .softmax import softmax
 from .amsoftmax import amsoftmax
+from .aamsoftmax import aamsoftmax

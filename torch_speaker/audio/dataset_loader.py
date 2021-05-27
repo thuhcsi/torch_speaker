@@ -10,6 +10,7 @@ from scipy.io import wavfile
 from sklearn.utils import shuffle
 from torch.utils.data import DataLoader, Dataset
 
+from .augment import WavAugment
 
 def load_audio(filename, second=2):
     sample_rate, waveform = wavfile.read(filename)
@@ -27,15 +28,18 @@ def load_audio(filename, second=2):
         start = np.int64(random.random()*(audio_length-length))
         return waveform[start:start+length].copy()
 
-
 class Train_Dataset(Dataset):
-    def __init__(self, data_list_path, second, spk_utt=200, num_per_speaker=1, **kwargs):
-        self.data_list_path = data_list_path
+    def __init__(self, train_csv_path, noise_csv_path, second, spk_utt=200, num_per_speaker=1, **kwargs):
         self.second = second
-        df = pd.read_csv(data_list_path)
+
+        df = pd.read_csv(train_csv_path)
         data_labels = df["utt_spk_int_labels"].values
         data_paths = df["utt_paths"].values
         data_labels, data_paths = shuffle(data_labels, data_paths)
+
+        df = pd.read_csv(noise_csv_path)
+        noise_paths = df["utt_paths"].values
+        self.wav_aug = WavAugment(noise_paths)
 
         table = {}
         for idx, label in enumerate(data_labels):
@@ -55,8 +59,15 @@ class Train_Dataset(Dataset):
         print("Train Dataset load {} utterance".format(len(self.labels)))
 
     def __getitem__(self, index):
-        audio = load_audio(self.paths[index], self.second)
-        return torch.FloatTensor(audio), self.labels[index]
+        waveform = load_audio(self.paths[index], self.second)
+        aug_idx = np.random.randint(0, 3)
+        if aug_idx == 1:
+            waveform = self.wav_aug.change_volum(waveform)
+        elif aug_idx == 2:
+            waveform = self.wav_aug.add_gaussian_noise(waveform)
+        elif aug_idx == 3:
+            waveform = self.wav_aug.add_real_noise(waveform)
+        return torch.FloatTensor(waveform), self.labels[index]
 
     def __len__(self):
         return len(self.paths)
@@ -69,8 +80,8 @@ class Evaluation_Dataset(Dataset):
         print("load {} utterance".format(len(self.paths)))
 
     def __getitem__(self, index):
-        audio = load_audio(self.paths[index], self.second)
-        return torch.FloatTensor(audio), self.paths[index]
+        waveform = load_audio(self.paths[index], self.second)
+        return torch.FloatTensor(waveform), self.paths[index]
 
     def __len__(self):
         return len(self.paths)

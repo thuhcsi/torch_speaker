@@ -5,7 +5,6 @@ import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import (Callback, LearningRateMonitor,
                                          ModelCheckpoint)
-from pytorch_lightning.loggers import CSVLogger
 
 from torch_speaker.module import Task
 from torch_speaker.utils import cfg, load_config
@@ -34,8 +33,8 @@ if __name__ == "__main__":
         print("initial parameter from pretrain model {}".format(cfg.checkpoint_path))
         print("keep_loss_weight {}".format(cfg.keep_loss_weight))
 
-    checkpoint_callback = ModelCheckpoint(monitor='train_loss', save_top_k=cfg.save_top_k,
-                                          filename="{epoch}_{train_loss:.2f}", dirpath=cfg.workspace)
+    checkpoint_callback = ModelCheckpoint(monitor='cosine_eer', save_top_k=cfg.save_top_k,
+                                          filename="{epoch}_{cosine_eer:.2f}", dirpath=cfg.workspace)
     lr_monitor = LearningRateMonitor(logging_interval='step')
     trainer = Trainer(callbacks=[checkpoint_callback, lr_monitor],
 					  num_sanity_val_steps=-1,

@@ -12,7 +12,7 @@ import torch_speaker.audio as audio
 import torch_speaker.backbone as backbone
 import torch_speaker.loss as loss
 import torch_speaker.score as score
-from torch_speaker.audio import Evaluation_Dataset, Train_Dataset
+from torch_speaker.audio import Evaluation_Dataset, Train_Dataset, SpecAugment
 from torch_speaker.utils import count_spk_number
 
 
@@ -24,6 +24,9 @@ class Task(LightningModule):
         # 1. acoustic feature
         feature_name = self.hparams.feature.pop('name')
         self.feature = getattr(audio, feature_name)(**self.hparams.feature)
+
+        ## SpecAugment tool ##
+        self.spec_aug = SpecAugment()
 
         # 2. backbone
         backbone_name = self.hparams.backbone.pop('name')
@@ -42,6 +45,7 @@ class Task(LightningModule):
 
     def forward(self, x, label):
         x = self.feature(x)
+        x = self.spec_aug(x)
         x = self.backbone(x)
         x = x.unsqueeze(1)
         loss, acc = self.loss(x, label)
@@ -56,11 +60,12 @@ class Task(LightningModule):
 
     def train_dataloader(self):
         train_dataset = Train_Dataset(
-            data_list_path=self.hparams.train_csv, 
-			second=self.hparams.second,
-			spk_utt=self.hparams.spk_utt,
-			num_per_speaker=self.hparams.num_per_speaker
-			)
+                train_csv_path=self.hparams.train_csv, 
+                noise_csv_path=self.hparams.noise_csv, 
+                second=self.hparams.second,
+                spk_utt=self.hparams.spk_utt,
+                num_per_speaker=self.hparams.num_per_speaker
+                )
 
         loader = torch.utils.data.DataLoader(
             train_dataset,
@@ -94,15 +99,15 @@ class Task(LightningModule):
         labels, scores = score.cosine_score(
             self.trials, self.index_mapping, self.eval_vectors)
         EER, threshold = score.compute_eer(labels, scores)
-        print("\nEER: {:.2f}% with threshold {:.2f}".format(EER*100, threshold))
-        self.log("cosine_EER(%)", EER*100)
+        print("\ncosine EER: {:.2f}% with threshold {:.2f}".format(EER*100, threshold))
+        self.log("cosine_eer", EER*100)
 
         minDCF, threshold = score.compute_minDCF(labels, scores, p_target=0.01)
-        print("minDCF(10-2): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
+        print("cosine minDCF(10-2): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
         self.log("cosine_minDCF(10-2)", minDCF)
 
         minDCF, threshold = score.compute_minDCF(labels, scores, p_target=0.001)
-        print("minDCF(10-3): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
+        print("cosine minDCF(10-3): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
         self.log("cosine_minDCF(10-3)", minDCF)
 
     def validation_epoch_end(self, outputs):
