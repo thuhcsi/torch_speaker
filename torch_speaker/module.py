@@ -25,9 +25,6 @@ class Task(LightningModule):
         feature_name = self.hparams.feature.pop('name')
         self.feature = getattr(audio, feature_name)(**self.hparams.feature)
 
-        ## SpecAugment tool ##
-        self.spec_aug = SpecAugment()
-
         # 2. backbone
         backbone_name = self.hparams.backbone.pop('name')
         self.backbone = getattr(backbone, backbone_name)(
@@ -45,7 +42,6 @@ class Task(LightningModule):
 
     def forward(self, x, label):
         x = self.feature(x)
-        x = self.spec_aug(x)
         x = self.backbone(x)
         x = x.unsqueeze(1)
         loss, acc = self.loss(x, label)
