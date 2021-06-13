@@ -60,13 +60,13 @@ class Train_Dataset(Dataset):
 
     def __getitem__(self, index):
         waveform = load_audio(self.paths[index], self.second)
-        aug_idx = np.random.randint(0, 3)
-        if aug_idx == 1:
-            waveform = self.wav_aug.change_volum(waveform)
-        elif aug_idx == 2:
-            waveform = self.wav_aug.add_gaussian_noise(waveform)
-        elif aug_idx == 3:
-            waveform = self.wav_aug.add_real_noise(waveform)
+		#aug_idx = np.random.randint(0, 3)
+        #if aug_idx == 1:
+        #    waveform = self.wav_aug.change_volum(waveform)
+        #elif aug_idx == 2:
+        #    waveform = self.wav_aug.add_gaussian_noise(waveform)
+        #elif aug_idx == 3:
+        #    waveform = self.wav_aug.add_real_noise(waveform)
         return torch.FloatTensor(waveform), self.labels[index]
 
     def __len__(self):

@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, Ca
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', help='train config file path', default="config/cnc_baseline.yaml")
+    parser.add_argument('--config', help='train config file path', default="config/config.yaml")
     parser.add_argument('--checkpoint_path', type=str, help='checkpoint file path', default=None)
     parser.add_argument('--trial_path', type=str, help='trial file path', default=None)
 
@@ -36,4 +36,3 @@ if __name__ == "__main__":
         print("keep_loss_weight {}".format(cfg.keep_loss_weight))
     trainer = Trainer(default_root_dir=cfg.workspace, **cfg.trainer)
     trainer.test(model)
- 

@@ -8,9 +8,9 @@ if __name__ == '__main__':
         version=__version__,
         description='Deep Learning Speaker Recognition Toolbox',
         url='',
-        author='zyzisyz',
+        author='Yang Zhang',
         author_email='zyziszy@foxmail.com',
-        keywords='deep learning',
+        keywords='speaker recognition',
         packages=find_packages(exclude=('config', 'tools', 'scripts')),
         classifiers=[
             'Development Status :: Beta',

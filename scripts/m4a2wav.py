@@ -82,7 +82,6 @@ def m4a2wav_main(m4a_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_dir', help='dataset dir', type=str, default="data")
-    parser.add_argument('--njobs', help='number of jobs', type=int, default=40)
     args = parser.parse_args()
 
     outSequences, outSpeakers = findAllSeqs(args.dataset_dir,
@@ -92,7 +91,7 @@ if __name__ == "__main__":
     outSequences = np.array(outSequences, dtype=str)
     utt_paths = outSequences.T[1].tolist()
 
-    with Pool(args.njobs) as p:
+    with Pool(16) as p:
         p.map(m4a2wav_main, utt_paths)
 
 

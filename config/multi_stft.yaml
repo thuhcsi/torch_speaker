@@ -1,10 +1,10 @@
-workspace: "exp/multi_stft"
+workspace: "exp/resnext_multi_stft"
 trial_path: "data/vox1_clean.txt"
 train_csv: "data/train.csv"
 noise_csv: "data/noise.csv"
 sample_rate: 16000
 second: 2
-batch_size: 128
+batch_size: 84
 num_workers: 64
 save_top_k: 30
 checkpoint_path: None
@@ -13,7 +13,7 @@ spk_utt: 100
 num_per_speaker: 1
 trainer:
         max_epochs: 50
-        gpus: 2
+        gpus: 6
         accelerator: dp
         check_val_every_n_epoch: 1
 feature: 
@@ -22,12 +22,12 @@ feature:
         n_fft: [1024, 1024, 1024, 1024, 1024]
         win_length: [100, 200, 400, 800, 1024]
         hop: [160, 160, 160, 160, 160]
-        n_mels: 64
+        n_mels: 40
 backbone: 
-        name: "resnet34"
+        name: "resnext50_32x4d"
         embedding_dim: 256
-        num_channels: [5, 32, 64, 128, 256]
-        n_mels: 64
+        num_channels: [5, 64, 128, 256, 512]
+        n_mels: 40
         pooling_type: "TSP"
 loss:
         name: "aamsoftmax"
@@ -40,6 +40,6 @@ optim:
         weight_decay: 0.0
 warmup_step: 500
 schedule:
-        name: "StepLR"
-        gamma: 0.1
-        step_size: 15
+        name: "MultiStepLR"
+        gamma: 0.3
+        milestones: [3, 5, 10, 12, 15, 20]

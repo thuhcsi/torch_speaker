@@ -139,7 +139,7 @@ class ResNet(nn.Module):
         num_channels: List[int] = [1, 32, 64, 128, 256],
         embedding_dim: int = 256,
         n_mels: int = 64,
-        pooling_type="ASP",
+        pooling_type="TSP",
         zero_init_residual: bool = False,
         groups: int = 1,
         width_per_group: int = 64,
@@ -321,10 +321,10 @@ def resnext50_32x4d(**kwargs: Any) -> ResNet:
 
 
 if __name__ == "__main__":
-    model = resnet34()
-    #model = resnext50_32x4d()
-    #model = resnet50()
-    #model = resnet34()
+	#model = resnet34()
+    model = resnext50_32x4d()
+	#model = resnet50()
+	#model = resnet34()
     total = sum([param.nelement() for param in model.parameters()])
     print("total param: {:.2f}M".format(total/1e6))
     data = torch.randn(10, 1, 64, 200)

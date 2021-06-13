@@ -136,26 +136,26 @@ class SpecAugment(nn.Module):
 
 
 if __name__ == "__main__":
-    import pandas as pd
-    df = pd.read_csv("noise.csv")
-    noise_paths = df["utt_paths"].values
+	import pandas as pd
+	df = pd.read_csv("noise.csv")
+	noise_paths = df["utt_paths"].values
 
-    sample_rate, waveform = wavfile.read("test.wav")
-    wave_aug = WavAugment(noise_paths=noise_paths)
-	#waveform = wave_aug.add_real_noise(waveform)
-    waveform = wave_aug.add_gaussian_noise(waveform)
-    #waveform = wave_aug.change_volum(waveform)
-    wavfile.write("out.wav", 16000, waveform.astype(np.int16))
+	sample_rate, waveform = wavfile.read("test.wav")
+	wave_aug = WavAugment(noise_paths=noise_paths)
+	waveform = wave_aug.add_real_noise(waveform)
+	waveform = wave_aug.add_gaussian_noise(waveform)
+	waveform = wave_aug.change_volum(waveform)
+	wavfile.write("out.wav", 16000, waveform.astype(np.int16))
 
-	#import matplotlib.pyplot as plt
-    #data = torch.randn(20, 1, 64, 200)
+	import matplotlib.pyplot as plt
+	data = torch.randn(20, 1, 64, 200)
 
-    #plt.subplot(211)
-    #plt.imshow(data[0][0])
+	plt.subplot(211)
+	plt.imshow(data[0][0])
 
-    #spec_aug = SpecAugment(aug_ratio=1.0)
-    #data = spec_aug(data)
-    #plt.subplot(212)
-    #plt.imshow(data[0][0])
-    #plt.savefig("test.png")
+	spec_aug = SpecAugment(aug_ratio=1.0)
+	data = spec_aug(data)
+	plt.subplot(212)
+	plt.imshow(data[0][0])
+	plt.savefig("test.png")
 

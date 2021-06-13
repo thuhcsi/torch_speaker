@@ -1,10 +1,10 @@
-workspace: "exp/aug"
+workspace: "exp/aam"
 trial_path: "data/vox1_clean.txt"
 train_csv: "data/train.csv"
 noise_csv: "data/noise.csv"
 sample_rate: 16000
-second: 2
-batch_size: 128
+second: 2.5
+batch_size: 192
 num_workers: 64
 save_top_k: 30
 checkpoint_path: None
@@ -13,7 +13,7 @@ spk_utt: 100
 num_per_speaker: 1
 trainer:
         max_epochs: 50
-        gpus: 2
+        gpus: 3
         accelerator: dp
         check_val_every_n_epoch: 1
 feature: 
@@ -22,15 +22,15 @@ feature:
         n_fft: 512
         win_length: 400
         hop: 160
-        n_mels: 64
+        n_mels: 80
 backbone: 
         name: "resnet34"
         embedding_dim: 256
         num_channels: [1, 32, 64, 128, 256]
-        n_mels: 64
+        n_mels: 80
         pooling_type: "TSP"
 loss:
-        name: "aamsoftmax"
+        name: "amsoftmax"
         embedding_dim: 256
         margin: 0.2
         scale: 30
@@ -42,4 +42,4 @@ warmup_step: 500
 schedule:
         name: "StepLR"
         gamma: 0.1
-        step_size: 15
+        step_size: 10

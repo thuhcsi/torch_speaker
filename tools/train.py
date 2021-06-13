@@ -10,10 +10,9 @@ from torch_speaker.module import Task
 from torch_speaker.utils import cfg, load_config
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='train config file path',
-                        default="config/cnc_baseline.yaml")
+                        default="config/config.yaml")
     args = parser.parse_args()
     load_config(cfg, args.config)
 

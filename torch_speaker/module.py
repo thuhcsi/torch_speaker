@@ -1,5 +1,4 @@
 import copy
-from collections import OrderedDict
 
 import numpy as np
 import torch
@@ -12,7 +11,7 @@ import torch_speaker.audio as audio
 import torch_speaker.backbone as backbone
 import torch_speaker.loss as loss
 import torch_speaker.score as score
-from torch_speaker.audio import Evaluation_Dataset, Train_Dataset, SpecAugment
+from torch_speaker.audio import Evaluation_Dataset, Train_Dataset
 from torch_speaker.utils import count_spk_number
 
 
@@ -40,10 +39,10 @@ class Task(LightningModule):
         x = self.backbone(x)
         return x
 
-    def forward(self, x, label):
+    def forward(self, x, label=None):
         x = self.feature(x)
         x = self.backbone(x)
-        x = x.unsqueeze(1)
+        x = x.reshape(-1, 1, )
         loss, acc = self.loss(x, label)
         return loss, acc
 

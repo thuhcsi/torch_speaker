@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .resnet import resnet34
-from .resnet import resnet50
+from .resnet import resnet34, resnet50, resnext50_32x4d

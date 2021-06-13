@@ -4,7 +4,6 @@ import torch.nn.functional as F
 
 from .utils import accuracy
 
-
 class softmax(nn.Module):
     def __init__(self, embedding_dim, num_classes, **kwargs):
         super(softmax, self).__init__()
