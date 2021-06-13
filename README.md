@@ -1,6 +1,8 @@
-# PyTorch Based Speaker Recognition System
+# HCSI speaker
 
-## installation
+a PyTorch Based Speaker Recognition toolkit
+
+## Installation
 
 ```bash
 git clone https://github.com/thuhcsi/torch_speaker
@@ -9,4 +11,5 @@ pip install -r requirements.txt
 python setup.py develop
 ```
 
+## Research
 
