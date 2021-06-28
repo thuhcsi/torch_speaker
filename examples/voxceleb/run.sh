@@ -5,7 +5,7 @@ voxceleb1_path=~/datasets/VoxCeleb/voxceleb1
 voxceleb2_path=~/datasets/VoxCeleb/voxceleb2
 musan_path=~/datasets/musan/
 
-stage=4
+stage=2
 
 if [ $stage -eq 0 ];then
 	rm -rf data/train/
@@ -49,7 +49,7 @@ fi
 
 if [ $stage -eq 2 ];then
 	python3 tools/train.py \
-		--config config/multi_stft.yaml
+		--config config/voxceleb.yaml
 fi
 
 if [ $stage -eq 3 ];then

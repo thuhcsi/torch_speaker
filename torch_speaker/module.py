@@ -1,3 +1,4 @@
+import os
 import copy
 
 import numpy as np
@@ -30,9 +31,10 @@ class Task(LightningModule):
             **self.hparams.backbone)
 
         # 3. compute loss function for gradient desent
-        self.hparams.loss.num_classes = count_spk_number(self.hparams.train_csv)
-        loss_name = self.hparams.loss.pop('name')
-        self.loss = getattr(loss, loss_name)(**self.hparams.loss)
+        if os.path.exists(self.hparams.train_csv):
+            self.hparams.loss.num_classes = count_spk_number(self.hparams.train_csv)
+            loss_name = self.hparams.loss.pop('name')
+            self.loss = getattr(loss, loss_name)(**self.hparams.loss)
 
     def extract_embedding(self, x):
         x = self.feature(x)
@@ -42,7 +44,7 @@ class Task(LightningModule):
     def forward(self, x, label=None):
         x = self.feature(x)
         x = self.backbone(x)
-        x = x.reshape(-1, 1, )
+        x = x.reshape(-1, 1, x.shape[-1])
         loss, acc = self.loss(x, label)
         return loss, acc
 

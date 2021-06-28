@@ -4,6 +4,42 @@ import torch
 from torch_speaker.utils import cfg, load_config
 from torch_speaker.module import Task
 
+class Adversarial_Attack_Helper(object):
+    def __init__(self, model, alpha=3.0, restarts=1, num_iters=5, epsilon=15, 
+            adv_save_dir="data/adv_data/", device="cuda"):
+        self.model = model
+        self.alpha = alpha
+        self.restarts = restarts
+        self.num_iters = num_iters
+        self.epsilon = epsilon
+        self.adv_save_dir = adv_save_dir
+        self.adv_trials_path = os.path.join(adv_save_dir, "adv_trials.lst")
+        self.device = device
+
+        if not os.path.exists(os.path.join(adv_save_dir, "wav")):
+            os.makedirs(os.path.join(adv_save_dir, "wav"))
+
+        self.model.eval()
+        if self.device == "cuda":
+            self.model.cuda()
+
+    def attack(self):
+        # adversarial attack example generation
+        adv_trials_file = open(self.adv_trials_path, "w")
+        labels = []
+        scores = []
+        for idx, item in enumerate(tqdm(self.trials)):
+            pass
+
+        print("EER: {:.3f} %".format(eer*100))
+
+
+    def bim_attack_step(self, idx, item):
+        label, enroll_path, test_path = item
+        return label, enroll_path, adv_test_path, final_score
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='train config file path', default="config/config.yaml")

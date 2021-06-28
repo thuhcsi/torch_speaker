@@ -61,7 +61,7 @@ class Spectrogram(nn.Module):
 
 
 class Mel_Spectrogram(nn.Module):
-    def __init__(self, sample_rate=16000, n_fft=512, win_length=400, hop=160, n_mels=64, coef=0.97):
+    def __init__(self, sample_rate=16000, n_fft=512, win_length=400, hop=160, n_mels=64, coef=0.97, requires_grad=False):
         super(Mel_Spectrogram, self).__init__()
         self.n_fft = n_fft
         self.n_mels = n_mels
@@ -72,7 +72,7 @@ class Mel_Spectrogram(nn.Module):
         mel_basis = librosa.filters.mel(
             sr=sample_rate, n_fft=n_fft, n_mels=n_mels)
         self.mel_basis = nn.Parameter(
-            torch.FloatTensor(mel_basis), requires_grad=False)
+            torch.FloatTensor(mel_basis), requires_grad=requires_grad)
         self.instance_norm = nn.InstanceNorm1d(num_features=n_mels)
         window = torch.hamming_window(self.win_length)
         self.window = nn.Parameter(
