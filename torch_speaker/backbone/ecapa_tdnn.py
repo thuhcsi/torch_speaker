@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-
 ''' Res2Conv1d + BatchNorm1d + ReLU
 '''
 class Res2Conv1dReluBn(nn.Module):
@@ -131,7 +129,7 @@ class ECAPA_TDNN(nn.Module):
         self.bn2 = nn.BatchNorm1d(embd_dim)
 
     def forward(self, x):
-        x = x.transpose(1, 2)
+        x = x.squeeze(1)
         out1 = self.layer1(x)
         out2 = self.layer2(out1) + out1
         out3 = self.layer3(out1 + out2) + out1 + out2
@@ -142,13 +140,17 @@ class ECAPA_TDNN(nn.Module):
         out = self.bn1(self.pooling(out))
         out = self.bn2(self.linear(out))
         return out
-      
 
+def ecapa_tdnn(n_mels=80, embeding_dim=192, num_channels=512, **kwargs):
+    model = ECAPA_TDNN(in_channels=n_mels, channels=num_channels, embd_dim=embeding_dim)
+    return model
 
 if __name__ == '__main__':
     # Input size: batch_size * seq_len * feat_dim
-    x = torch.zeros(2, 200, 80)
+    x = torch.zeros(2, 1, 80, 200)
     model = ECAPA_TDNN(in_channels=80, channels=512, embd_dim=192)
-    out = model(x)
     print(model)
+    out = model(x)
+    total = sum([param.nelement() for param in model.parameters()])
+    print("total param: {:.2f}M".format(total/1e6))
     print(out.shape)    # should be [2, 192]

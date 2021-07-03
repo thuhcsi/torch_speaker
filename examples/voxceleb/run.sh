@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5
-voxceleb1_path=~/datasets/VoxCeleb/voxceleb1
-voxceleb2_path=~/datasets/VoxCeleb/voxceleb2
+export CUDA_VISIBLE_DEVICES=1,2
+voxceleb1_path=~/datasets/voxceleb/voxceleb1
+voxceleb2_path=~/datasets/voxceleb/voxceleb2
 musan_path=~/datasets/musan/
 
 stage=2
@@ -33,23 +33,23 @@ if [ $stage -eq 1 ];then
 	echo format trial list
 	python3 scripts/format_trials.py \
 		--voxceleb1_root $voxceleb1_path \
-		--src_trials_path $voxceleb2_path/List_of_trial_pairs-VoxCeleb1-Clean.txt \
+		--src_trials_path $voxceleb2_path/veri_test2.txt \
 		--dst_trials_path data/vox1_clean.txt
 
 	python3 scripts/format_trials.py \
 		--voxceleb1_root $voxceleb1_path \
-		--src_trials_path $voxceleb2_path/List_of_trial_pairs-VoxCeleb1-H-Clean.txt \
+		--src_trials_path $voxceleb2_path/list_test_hard2.txt \
 		--dst_trials_path data/vox1_H_clean.txt
 
 	python3 scripts/format_trials.py \
 		--voxceleb1_root $voxceleb1_path \
-		--src_trials_path $voxceleb2_path/List_of_trial_pairs-VoxCeleb1-E-Clean.txt \
+		--src_trials_path $voxceleb2_path/list_test_all2.txt \
 		--dst_trials_path data/vox1_E_clean.txt
 fi
 
 if [ $stage -eq 2 ];then
 	python3 tools/train.py \
-		--config config/voxceleb.yaml
+		--config config/ecapa_tdnn.yaml
 fi
 
 if [ $stage -eq 3 ];then

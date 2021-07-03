@@ -321,10 +321,10 @@ def resnext50_32x4d(**kwargs: Any) -> ResNet:
 
 
 if __name__ == "__main__":
-	#model = resnet34()
+    #model = resnet34()
     model = resnext50_32x4d()
-	#model = resnet50()
-	#model = resnet34()
+    #model = resnet50()
+    #model = resnet34()
     total = sum([param.nelement() for param in model.parameters()])
     print("total param: {:.2f}M".format(total/1e6))
     data = torch.randn(10, 1, 64, 200)

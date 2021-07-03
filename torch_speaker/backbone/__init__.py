@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from .resnet import resnet34, resnet50, resnext50_32x4d
+from .ecapa_tdnn import ecapa_tdnn
