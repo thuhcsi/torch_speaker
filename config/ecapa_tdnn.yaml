@@ -5,7 +5,7 @@ noise_csv: "data/noise.csv"
 sample_rate: 16000
 second: 2
 batch_size: 200
-num_workers: 64
+num_workers: 40
 save_top_k: 30
 checkpoint_path: None
 keep_loss_weight: True
@@ -30,16 +30,19 @@ backbone:
         num_channels: 512
         n_mels: 80
 loss:
-        name: "amsoftmax"
+        name: "aamsoftmax"
         embedding_dim: 192
         margin: 0.2
         scale: 30
 optim:
         name: "Adam"
-        lr: 0.02
-        weight_decay: 0.0
+        lr: 0.001
+        weight_decay: 0.00005
 warmup_step: 500
 schedule:
-        name: "StepLR"
-        gamma: 0.85
-        step_size: 3
+        name: "CyclicLR"
+        base_lr: 0.00000001
+        max_lr: 0.001
+        step_size_up: 256
+        step_size_down: 300
+        cycle_momentum: False
