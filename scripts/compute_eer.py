@@ -17,6 +17,7 @@ def compute_eer(labels, scores):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--score_path', type=str, default="score.txt")
+    parser.add_argument('--score_img', type=str, default=None)
     args = parser.parse_args()
 
     data = np.loadtxt(args.score_path).T
@@ -25,20 +26,18 @@ if __name__ == "__main__":
     eer, threshold = compute_eer(labels, scores)
     print("EER: {:.3f}% with threshold {:.2f}".format(eer*100, threshold))
 
-    eer, threshold = compute_eer(labels, scores)
-    print("EER: {:.3f}% with threshold {:.2f}".format(eer*100, threshold))
+    if args.score_img is not None:
+        false_score = []
+        true_score = []
+        for i in range(len(labels)):
+            if labels[i] == 0:
+                false_score.append(scores[i])
+            else:
+                true_score.append(scores[i])
 
-    false_score = []
-    true_score = []
-    for i in range(len(labels)):
-        if labels[i] == 0:
-            false_score.append(scores[i])
-        else:
-            true_score.append(scores[i])
+        plt.hist(false_score, bins=100, label="False Score")
+        plt.hist(true_score, bins=100, label="True Score")
 
-    plt.hist(false_score, bins=100, label="False Score")
-    plt.hist(true_score, bins=100, label="True Score")
-
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig("test.png")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(args.score_img)
