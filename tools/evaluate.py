@@ -11,10 +11,12 @@ if __name__ == "__main__":
     parser.add_argument('--config', help='train config file path', default="config/config.yaml")
     parser.add_argument('--checkpoint_path', type=str, help='checkpoint file path', default=None)
     parser.add_argument('--trial_path', type=str, help='trial file path', default=None)
+    parser.add_argument('--score_save_path', type=str, help='trial file path', default=None)
 
     args = parser.parse_args()
     load_config(cfg, args.config)
     cfg.trainer.gpus = 1
+    cfg.score_save_path = args.score_save_path
     if args.checkpoint_path is not None:
         cfg.checkpoint_path = args.checkpoint_path
     if args.trial_path is not None:

@@ -96,6 +96,7 @@ class Task(LightningModule):
         labels, scores = score.cosine_score(
             self.trials, self.index_mapping, self.eval_vectors)
         EER, threshold = score.compute_eer(labels, scores)
+
         print("\ncosine EER: {:.2f}% with threshold {:.2f}".format(EER*100, threshold))
         self.log("cosine_eer", EER*100)
 
@@ -106,6 +107,12 @@ class Task(LightningModule):
         minDCF, threshold = score.compute_minDCF(labels, scores, p_target=0.001)
         print("cosine minDCF(10-3): {:.2f} with threshold {:.2f}".format(minDCF, threshold))
         self.log("cosine_minDCF(10-3)", minDCF)
+
+        # save score
+        if self.hparams.score_save_path is not None:
+            with open(self.hparams.score_save_path, "w") as f:
+                for i in range(len(labels)):
+                    f.write("{} {}\n".format(labels[i], scores[i]))
 
     def validation_epoch_end(self, outputs):
         self.test_epoch_end(outputs)

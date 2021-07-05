@@ -2,6 +2,7 @@ workspace: "exp/aam"
 trial_path: "data/vox1_clean.txt"
 train_csv: "data/train.csv"
 noise_csv: "data/noise.csv"
+score_save_path: None
 sample_rate: 16000
 second: 2
 batch_size: 192
