@@ -2,3 +2,5 @@ numpy
 scipy
 sklearn
 onnx-simplifier
+matplotlib
+pandas
