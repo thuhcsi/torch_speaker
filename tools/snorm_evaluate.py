@@ -23,10 +23,12 @@ def compute_eer(labels, scores):
     return eer, threshold
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='train config file path', default="config/config.yaml")
     parser.add_argument('--checkpoint_path', type=str, help='checkpoint file path', default=None)
     parser.add_argument('--trial_path', type=str, help='trial file path', default=None)
+    parser.add_argument('--cohort_path', type=str, 
+            help='a cohort with N speakers which is different from the enroll and tes', default=None)
     parser.add_argument('--score_save_path', type=str, help='trial file path', default=None)
 
     args = parser.parse_args()
