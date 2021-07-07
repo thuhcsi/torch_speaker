@@ -2,12 +2,13 @@ workspace: "exp/ecapa_tdnn_am"
 trial_path: "data/vox1_clean.txt"
 train_csv: "data/train.csv"
 noise_csv: "data/noise.csv"
+score_save_path: None
 sample_rate: 16000
 second: 2
 batch_size: 200
 num_workers: 40
 save_top_k: 30
-checkpoint_path: None
+checkpoint_path: ckpt.pt
 keep_loss_weight: True
 spk_utt: 100
 num_per_speaker: 1
@@ -36,13 +37,13 @@ loss:
         scale: 30
 optim:
         name: "Adam"
-        lr: 0.001
+        lr: 0.00001
         weight_decay: 0.00005
 warmup_step: 500
 schedule:
         name: "CyclicLR"
-        base_lr: 0.00000001
-        max_lr: 0.001
-        step_size_up: 256
-        step_size_down: 300
+        base_lr: 0.000000001
+        max_lr: 0.00001
+        step_size_up: 512
+        step_size_down: 512
         cycle_momentum: False
