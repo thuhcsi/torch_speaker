@@ -35,8 +35,8 @@ if __name__ == "__main__":
             else:
                 true_score.append(scores[i])
 
-        plt.hist(false_score, bins=100, label="False Score")
-        plt.hist(true_score, bins=100, label="True Score")
+        plt.hist(false_score, bins=100, label="negtive score")
+        plt.hist(true_score, bins=100, label="positive score")
 
         plt.legend()
         plt.tight_layout()

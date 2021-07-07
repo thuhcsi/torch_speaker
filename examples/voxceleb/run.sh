@@ -1,11 +1,11 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=1,2
+export CUDA_VISIBLE_DEVICES=0
 voxceleb1_path=~/datasets/voxceleb/voxceleb1
 voxceleb2_path=~/datasets/voxceleb/voxceleb2
 musan_path=~/datasets/musan/
 
-stage=2
+stage=3
 
 if [ $stage -eq 0 ];then
 	rm -rf data/train/
@@ -53,20 +53,32 @@ if [ $stage -eq 2 ];then
 fi
 
 if [ $stage -eq 3 ];then
-	python3 tools/evaluate.py \
-		--config config/voxceleb.yaml \
-		--trial_path data/vox1_clean.txt \
-		--checkpoint_path ckpt.pt
+    trial_path=data/vox1_clean.txt
+
+    python3 scripts/make_cohort_set.py \
+        --data_list_path data/train.csv \
+        --cohort_save_path data/cohort.txt \
+        --num_cohort 10000
 
 	python3 tools/evaluate.py \
 		--config config/voxceleb.yaml \
-		--trial_path data/vox1_E_clean.txt \
+		--trial_path $trial_path \
 		--checkpoint_path ckpt.pt
 
-	python3 tools/evaluate.py \
+	python3 tools/snorm_evaluate.py \
 		--config config/voxceleb.yaml \
-		--trial_path data/vox1_H_clean.txt \
-		--checkpoint_path ckpt.pt
+		--trial_path $trial_path \
+		--checkpoint_path ckpt.pt \
+        --score_save_path score.txt \
+        --cohort_path data/cohort.txt 
+
+    python3 tools/asnorm_evaluate.py \
+        --config config/voxceleb.yaml \
+        --trial_path data/vox1.txt \
+        --checkpoint_path ckpt.pt \
+        --score_save_path score.txt \
+        --cohort_path data/cohort.txt \
+        --top_n 300
 fi
 
 if [ $stage -eq 4 ];then

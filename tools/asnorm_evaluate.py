@@ -30,10 +30,12 @@ if __name__ == "__main__":
     parser.add_argument('--cohort_path', type=str, 
             help='a cohort with N speakers which is different from the enroll and tes', default=None)
     parser.add_argument('--score_save_path', type=str, help='trial file path', default=None)
+    parser.add_argument('--top_n', type=int, help='trial file path', default=300)
 
     args = parser.parse_args()
     load_config(cfg, args.config)
     cfg.trainer.gpus = 1
+    cfg.score_save_path = args.score_save_path
     if args.checkpoint_path is not None:
         cfg.checkpoint_path = args.checkpoint_path
     if args.trial_path is not None:
@@ -90,9 +92,10 @@ if __name__ == "__main__":
             scores = embedding.dot(cohort_embeddings.T)
             denoms = np.linalg.norm(embedding) * np.linalg.norm(cohort_embeddings, axis=1)
             scores = scores / denoms
+            scores = np.sort(scores)
             val.append(embedding)
-            val.append(np.mean(scores))
-            val.append(np.std(scores))
+            val.append(np.mean(scores[-args.top_n:]))
+            val.append(np.std(scores[-args.top_n:]))
             table[audio_label[0]] = val
 
     scores = []
