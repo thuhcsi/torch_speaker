@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=2
 voxceleb1_path=~/datasets/voxceleb/voxceleb1
 voxceleb2_path=~/datasets/voxceleb/voxceleb2
 musan_path=~/datasets/musan/
@@ -49,7 +49,7 @@ fi
 
 if [ $stage -eq 2 ];then
 	python3 tools/train.py \
-		--config config/ecapa_tdnn.yaml
+		--config config/long_tail/focal_loss.yaml
 fi
 
 if [ $stage -eq 3 ];then

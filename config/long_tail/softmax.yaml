@@ -1,0 +1,45 @@
+workspace: "exp/softmax"
+trial_path: "data/vox1_clean.txt"
+train_csv: "data/train.csv"
+noise_csv: "data/noise.csv"
+score_save_path: None
+sample_rate: 16000
+second: 2
+batch_size: 80
+num_workers: 40
+save_top_k: 30
+checkpoint_path: None
+keep_loss_weight: True
+spk_utt: 100
+num_per_speaker: 1
+trainer:
+        max_epochs: 5
+        gpus: 1
+        accelerator: dp
+        check_val_every_n_epoch: 1
+feature: 
+        name: "Mel_Spectrogram"
+        coef: 0.97
+        n_fft: 512
+        win_length: 400
+        hop: 160
+        n_mels: 64
+        requires_grad: True
+backbone: 
+        name: "resnet34"
+        embedding_dim: 256
+        num_channels: [1, 32, 64, 128, 256]
+        n_mels: 64
+        pooling_type: "TSP"
+loss:
+        name: "softmax"
+        embedding_dim: 256
+optim:
+        name: "Adam"
+        lr: 0.01
+        weight_decay: 0.0
+warmup_step: 500
+schedule:
+        name: "StepLR"
+        gamma: 0.5
+        step_size: 3

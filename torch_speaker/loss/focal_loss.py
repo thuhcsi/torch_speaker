@@ -5,13 +5,12 @@ import torch.nn.functional as F
 from .utils import accuracy
 
 class focal_loss(nn.Module):
-    def __init__(self, embedding_dim, num_classes, gamma=0.01, eps=1e-7, **kwargs):
+    def __init__(self, embedding_dim, num_classes, gamma=0.01, **kwargs):
         super(focal_loss, self).__init__()
         self.gamma = gamma
-        self.eps = eps
         self.embedding_dim = embedding_dim
         self.fc = nn.Linear(embedding_dim, num_classes)
-        self.criertion = nn.CrossEntropyLoss()
+        self.criertion = nn.CrossEntropyLoss(reduction="none")
 
     def forward(self, x, label):
         assert len(x.shape) == 3
@@ -26,7 +25,7 @@ class focal_loss(nn.Module):
         p = torch.exp(-logp)
         loss = (1 - p) ** self.gamma * logp
         prec1 = accuracy(x.detach(), label.detach(), topk=(1,))[0]
-        return loss, prec1
+        return loss.mean(), prec1
 
 if __name__ == "__main__":
     model = focal_loss(10, 100)
