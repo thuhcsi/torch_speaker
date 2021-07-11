@@ -12,6 +12,7 @@ import torch_speaker.audio as audio
 import torch_speaker.backbone as backbone
 import torch_speaker.loss as loss
 import torch_speaker.score as score
+
 from torch_speaker.audio import Evaluation_Dataset, Train_Dataset
 from torch_speaker.utils import count_spk_number
 
@@ -31,39 +32,39 @@ class Task(LightningModule):
             **self.hparams.backbone)
 
         # 3. compute loss function for gradient desent
-        if os.path.exists(self.hparams.train_csv):
-            self.hparams.loss.num_classes = count_spk_number(self.hparams.train_csv)
+        if os.path.exists(self.hparams.train_dataset.train_csv_path):
+            self.hparams.loss.num_classes = count_spk_number(self.hparams.train_dataset.train_csv_path)
             loss_name = self.hparams.loss.pop('name')
             self.loss = getattr(loss, loss_name)(**self.hparams.loss)
 
     def extract_embedding(self, x):
+        x = x.reshape(-1, x.shape[-1])
         x = self.feature(x)
         x = self.backbone(x)
         return x
 
     def forward(self, x, label=None):
+        x = x.reshape(-1, x.shape[-1])
         x = self.feature(x)
         x = self.backbone(x)
-        x = x.reshape(-1, 1, x.shape[-1])
+        x = x.reshape(-1, self.hparams.num_shot, x.shape[-1])
+        input(x.shape)
         loss, acc = self.loss(x, label)
         return loss, acc
 
     def training_step(self, batch, batch_idx):
         waveform, label = batch
+        input(waveform.shape)
         loss, acc = self(waveform, label)
         self.log('train_loss', loss, prog_bar=True)
         self.log('train_acc', acc, prog_bar=True)
         return loss
 
     def train_dataloader(self):
-        train_dataset = Train_Dataset(
-                train_csv_path=self.hparams.train_csv, 
-                noise_csv_path=self.hparams.noise_csv, 
-                second=self.hparams.second,
-                spk_utt=self.hparams.spk_utt,
-                num_per_speaker=self.hparams.num_per_speaker
-                )
-
+        dataset_name = self.hparams.train_dataset.pop('name')
+        build_dataset = getattr(audio, dataset_name)
+        dataset_cfg = copy.deepcopy(self.hparams.train_dataset)
+        train_dataset = build_dataset(**dataset_cfg)
         loader = torch.utils.data.DataLoader(
             train_dataset,
             shuffle=True,

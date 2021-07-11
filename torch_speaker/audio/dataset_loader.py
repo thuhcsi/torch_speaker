@@ -60,17 +60,50 @@ class Train_Dataset(Dataset):
 
     def __getitem__(self, index):
         waveform = load_audio(self.paths[index], self.second)
-		#aug_idx = np.random.randint(0, 3)
-        #if aug_idx == 1:
-        #    waveform = self.wav_aug.change_volum(waveform)
-        #elif aug_idx == 2:
-        #    waveform = self.wav_aug.add_gaussian_noise(waveform)
-        #elif aug_idx == 3:
-        #    waveform = self.wav_aug.add_real_noise(waveform)
         return torch.FloatTensor(waveform), self.labels[index]
 
     def __len__(self):
         return len(self.paths)
+
+
+class Few_Shot_Dataset(Dataset):
+    def __init__(self, train_csv_path, second, num_shot=3, **kwargs):
+        self.second = second
+
+        df = pd.read_csv(train_csv_path)
+        data_labels = df["utt_spk_int_labels"].values
+        data_paths = df["utt_paths"].values
+        self.labels, self.paths = shuffle(data_labels, data_paths)
+        self.num_shot = num_shot
+
+        print("Train Dataset load {} speakers".format(len(set(data_labels))))
+        print("Train Dataset load {} utterance".format(len(self.labels)))
+
+    def __getitem__(self, index):
+        data = self.load_audio(self.paths[index], self.second)
+        return torch.FloatTensor(data), self.labels[index]
+
+    def __len__(self):
+        return len(self.paths)
+
+    def load_audio(self, filename, second=2):
+        sample_rate, waveform = wavfile.read(filename)
+        if second <= 0:
+            return waveform
+
+        length = np.int64(sample_rate * second)
+        audio_length = waveform.shape[0]
+
+        if audio_length <= length*self.num_shot:
+            shortage = length*self.num_shot - audio_length
+            waveform = np.pad(waveform, (0, shortage), 'wrap')
+
+        data = []
+        for i in range(self.num_shot):
+            start = np.int64(random.random()*(audio_length-length))
+            data.append(waveform[start:start+length].copy())
+        return np.array(data)
+
 
 
 class Evaluation_Dataset(Dataset):
@@ -85,3 +118,4 @@ class Evaluation_Dataset(Dataset):
 
     def __len__(self):
         return len(self.paths)
+

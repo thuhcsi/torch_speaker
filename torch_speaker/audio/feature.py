@@ -133,7 +133,8 @@ if __name__ == "__main__":
 
     sample_rate, sig = wavfile.read("test.wav")
     sig = torch.FloatTensor(sig.copy())
-    sig = sig.repeat(10, 1)
+    sig = sig.repeat(10, 1, 1)
+    print(sig.shape)
 
     spec = Multi_Resolution_Mel_Spectrogram()
     out = spec(sig)
