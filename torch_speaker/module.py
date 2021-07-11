@@ -21,6 +21,7 @@ class Task(LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
         self.save_hyperparameters()
+        self.train_dataset_name = self.hparams.train_dataset.pop('name')
 
         # 1. acoustic feature
         feature_name = self.hparams.feature.pop('name')
@@ -48,21 +49,18 @@ class Task(LightningModule):
         x = self.feature(x)
         x = self.backbone(x)
         x = x.reshape(-1, self.hparams.num_shot, x.shape[-1])
-        input(x.shape)
         loss, acc = self.loss(x, label)
         return loss, acc
 
     def training_step(self, batch, batch_idx):
         waveform, label = batch
-        input(waveform.shape)
         loss, acc = self(waveform, label)
         self.log('train_loss', loss, prog_bar=True)
         self.log('train_acc', acc, prog_bar=True)
         return loss
 
     def train_dataloader(self):
-        dataset_name = self.hparams.train_dataset.pop('name')
-        build_dataset = getattr(audio, dataset_name)
+        build_dataset = getattr(audio, self.train_dataset_name)
         dataset_cfg = copy.deepcopy(self.hparams.train_dataset)
         train_dataset = build_dataset(**dataset_cfg)
         loader = torch.utils.data.DataLoader(

@@ -16,3 +16,5 @@ from .softmax import softmax
 from .amsoftmax import amsoftmax
 from .aamsoftmax import aamsoftmax
 from .focal_loss import focal_loss
+from .proto import proto
+from .angleproto import angleproto

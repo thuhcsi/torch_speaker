@@ -74,6 +74,8 @@ class Few_Shot_Dataset(Dataset):
         data_labels = df["utt_spk_int_labels"].values
         data_paths = df["utt_paths"].values
         self.labels, self.paths = shuffle(data_labels, data_paths)
+        self.labels = self.labels[:48*1000]
+        self.paths = self.paths[:48*1000]
         self.num_shot = num_shot
 
         print("Train Dataset load {} speakers".format(len(set(data_labels))))
