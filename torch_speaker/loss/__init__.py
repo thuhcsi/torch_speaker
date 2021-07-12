@@ -18,3 +18,4 @@ from .aamsoftmax import aamsoftmax
 from .focal_loss import focal_loss
 from .proto import proto
 from .angleproto import angleproto
+from .center_loss import center_softmax

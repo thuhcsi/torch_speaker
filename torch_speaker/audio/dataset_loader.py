@@ -29,17 +29,13 @@ def load_audio(filename, second=2):
         return waveform[start:start+length].copy()
 
 class Train_Dataset(Dataset):
-    def __init__(self, train_csv_path, noise_csv_path, second, spk_utt=200, num_per_speaker=1, **kwargs):
+    def __init__(self, train_csv_path, second=2, spk_utt=200, **kwargs):
         self.second = second
 
         df = pd.read_csv(train_csv_path)
         data_labels = df["utt_spk_int_labels"].values
         data_paths = df["utt_paths"].values
         data_labels, data_paths = shuffle(data_labels, data_paths)
-
-        df = pd.read_csv(noise_csv_path)
-        noise_paths = df["utt_paths"].values
-        self.wav_aug = WavAugment(noise_paths)
 
         table = {}
         for idx, label in enumerate(data_labels):
@@ -49,12 +45,11 @@ class Train_Dataset(Dataset):
 
         self.labels = []
         self.paths = []
-        for _ in range(spk_utt//num_per_speaker):
+        for _ in range(spk_utt):
             for key, val in table.items():
-                for _ in range(num_per_speaker):
-                    idx = random.randint(0, len(val)-1)
-                    self.labels.append(key)
-                    self.paths.append(val[idx])
+                idx = random.randint(0, len(val)-1)
+                self.labels.append(key)
+                self.paths.append(val[idx])
         print("Train Dataset load {} speakers".format(len(set(data_labels))))
         print("Train Dataset load {} utterance".format(len(self.labels)))
 
@@ -101,8 +96,8 @@ class Few_Shot_Dataset(Dataset):
             waveform = np.pad(waveform, (0, shortage), 'wrap')
 
         data = []
+        start = np.int64(random.random()*(audio_length-length))
         for i in range(self.num_shot):
-            start = np.int64(random.random()*(audio_length-length))
             data.append(waveform[start:start+length].copy())
         return np.array(data)
 

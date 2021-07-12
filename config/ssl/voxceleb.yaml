@@ -3,14 +3,15 @@ trial_path: "data/vox1_clean.txt"
 keep_loss_weight: True
 checkpoint_path: None
 num_workers: 64
-num_shot: 1
+num_shot: 2
 batch_size: 64
 save_top_k: 30
 score_save_path: None
 train_dataset:
-        name: "Train_Dataset"
+        name: "Few_Shot_Dataset"
         train_csv_path: "data/train.csv"
         noise_csv_path: "data/noise.csv"
+        num_shot: 2
         sample_rate: 16000
         second: 2
 trainer:
@@ -33,8 +34,7 @@ backbone:
         n_mels: 64
         pooling_type: "TSP"
 loss:
-        name: "center_softmax"
-        embedding_dim: 256
+        name: "angleproto"
 optim:
         name: "Adam"
         lr: 0.01
