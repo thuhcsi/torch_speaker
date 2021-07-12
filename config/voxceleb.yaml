@@ -1,10 +1,10 @@
-workspace: "exp/aam"
+workspace: "exp/center"
 trial_path: "data/vox1_clean.txt"
 keep_loss_weight: True
 checkpoint_path: None
-num_workers: 64
+num_workers: 40
 num_shot: 1
-batch_size: 64
+batch_size: 360
 save_top_k: 30
 score_save_path: None
 train_dataset:
@@ -12,10 +12,11 @@ train_dataset:
         train_csv_path: "data/train.csv"
         noise_csv_path: "data/noise.csv"
         sample_rate: 16000
-        second: 2
+        second: 1.75
+        spk_utt: 100
 trainer:
-        max_epochs: 5
-        gpus: 1
+        max_epochs: 15
+        gpus: 3
         accelerator: dp
         check_val_every_n_epoch: 1
 feature: 
@@ -37,7 +38,7 @@ loss:
         embedding_dim: 256
 optim:
         name: "Adam"
-        lr: 0.01
+        lr: 0.001
         weight_decay: 0.0
 warmup_step: 500
 schedule:

@@ -48,13 +48,16 @@ class center_softmax(nn.Module):
         embedding_dim (int): embedding dimension.
         num_classes (int): number of classes.
     """
-    def __init__(self, embedding_dim, num_classes, lambada=0.1, **kwargs):
+    def __init__(self, embedding_dim, num_classes, weight=0.05, **kwargs):
         super(center_softmax, self).__init__()
-        self.lambada = lambada
+        self.weight = weight
         self.embedding_dim = embedding_dim
         self.num_classes = num_classes
         self.center_loss = center_loss(embedding_dim, num_classes)
         self.softmax_loss = softmax(embedding_dim, num_classes)
+
+        print('init center softmax with lambda {:.2f}'.format(weight))
+        print('Embedding dim is {}, number of speakers is {}'.format(embedding_dim, num_classes))
 
     def forward(self, x, label):
         """
@@ -64,7 +67,7 @@ class center_softmax(nn.Module):
         """
         loss_c = self.center_loss(x, label)
         loss_s, acc1 = self.softmax_loss(x, label)
-        loss = self.lambada * loss_s + (1-self.lambada) * loss_c
+        loss = self.weight * loss_c + (1.0-self.weight) * loss_s
 
         return loss, acc1
 

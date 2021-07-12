@@ -11,6 +11,7 @@ class softmax(nn.Module):
         self.fc = nn.Linear(embedding_dim, num_classes)
         self.criertion = nn.CrossEntropyLoss()
 
+        print('init softmax')
         print('Embedding dim is {}, number of speakers is {}'.format(embedding_dim, num_classes))
 
     def forward(self, x, label=None):

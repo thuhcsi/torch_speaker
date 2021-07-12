@@ -60,6 +60,7 @@ class Task(LightningModule):
         return loss
 
     def train_dataloader(self):
+        print("init {} dataset".format(self.train_dataset_name))
         build_dataset = getattr(audio, self.train_dataset_name)
         dataset_cfg = copy.deepcopy(self.hparams.train_dataset)
         train_dataset = build_dataset(**dataset_cfg)

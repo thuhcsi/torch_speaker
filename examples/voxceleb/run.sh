@@ -1,11 +1,11 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3,4,5
 voxceleb1_path=~/datasets/voxceleb/voxceleb1
 voxceleb2_path=~/datasets/voxceleb/voxceleb2
 musan_path=~/datasets/musan/
 
-stage=2
+stage=1
 
 if [ $stage -eq 0 ];then
 	rm -rf data/train/
