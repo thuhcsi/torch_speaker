@@ -1,6 +1,6 @@
 # HCSI speaker
 
-a PyTorch Based Speaker Recognition toolkit
+A Speaker Recognition toolkit, which contains the implementation of popular speaker recognition algorithms in pytorch.
 
 ## Installation
 
@@ -11,7 +11,11 @@ pip install -r requirements.txt
 python setup.py develop
 ```
 
-## Visual
+## Visualization
+
+<div align="center">
+  <img src="docs/score.png" alt="score" width="49.5%">
+</div>
 
 ## Research
 
