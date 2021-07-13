@@ -23,8 +23,8 @@ class softmax(nn.Module):
 
         x = self.fc(x)
         loss = self.criertion(x, label)
-        prec1 = accuracy(x.detach(), label.detach(), topk=(1,))[0]
-        return loss, prec1
+        acc1 = accuracy(x.detach(), label.detach(), topk=(1,))[0]
+        return loss, acc1
 
 
 if __name__ == "__main__":

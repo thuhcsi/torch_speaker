@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from .softmax import softmax
+from .amsoftmax import amsoftmax
 
 class center_loss(nn.Module):
     """Center loss.
@@ -18,7 +20,6 @@ class center_loss(nn.Module):
         self.embedding_dim = embedding_dim
         self.num_classes = num_classes
         self.centers_table =  nn.Embedding(num_classes, embedding_dim)
-        self.dist = nn.PairwiseDistance(p=2.0, eps=1e-06, keepdim=False)
 
     def forward(self, x, label):
         """
@@ -33,7 +34,7 @@ class center_loss(nn.Module):
         assert x.size()[1] == self.embedding_dim
 
         centers = self.centers_table(label)
-        loss = self.dist(x, centers)
+        loss = F.cosine_similarity(x, centers, dim=1, eps=1e-8)
 
         return loss.mean()
 
@@ -53,8 +54,8 @@ class center_softmax(nn.Module):
         self.weight = weight
         self.embedding_dim = embedding_dim
         self.num_classes = num_classes
-        self.center_loss = center_loss(embedding_dim, num_classes)
-        self.softmax_loss = softmax(embedding_dim, num_classes)
+        self.center_loss = center_loss(embedding_dim, num_classes, **kwargs)
+        self.softmax_loss = softmax(embedding_dim, num_classes, **kwargs)
 
         print('init center softmax with lambda {:.2f}'.format(weight))
         print('Embedding dim is {}, number of speakers is {}'.format(embedding_dim, num_classes))
@@ -70,6 +71,41 @@ class center_softmax(nn.Module):
         loss = self.weight * loss_c + (1.0-self.weight) * loss_s
 
         return loss, acc1
+
+
+class center_am(nn.Module):
+    """Center softmax.
+    
+    Reference:
+    Wen et al. A Discriminative Feature Learning Approach for Deep Face Recognition. ECCV 2016.
+    
+    Args:
+        embedding_dim (int): embedding dimension.
+        num_classes (int): number of classes.
+    """
+    def __init__(self, embedding_dim, num_classes, weight=0.05, **kwargs):
+        super(center_am, self).__init__()
+        self.weight = weight
+        self.embedding_dim = embedding_dim
+        self.num_classes = num_classes
+        self.center_loss = center_loss(embedding_dim, num_classes, **kwargs)
+        self.amsoftmax = amsoftmax(embedding_dim, num_classes, **kwargs)
+
+        print('init center AM-softmax with lambda {:.2f}'.format(weight))
+        print('Embedding dim is {}, number of speakers is {}'.format(embedding_dim, num_classes))
+
+    def forward(self, x, label):
+        """
+        Args:
+            x: speaker embedding with shape (batch_size, num_shot, feat_dim).
+            label: ground truth label with shape (batch_size).
+        """
+        loss_c = self.center_loss(x, label)
+        loss_s, acc1 = self.amsoftmax(x, label)
+        loss = self.weight * loss_c + (1.0-self.weight) * loss_s
+
+        return loss, acc1
+
 
 
 if __name__ == "__main__":

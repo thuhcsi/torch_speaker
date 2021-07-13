@@ -4,7 +4,7 @@ keep_loss_weight: True
 checkpoint_path: None
 num_workers: 40
 num_shot: 1
-batch_size: 360
+batch_size: 10
 save_top_k: 30
 score_save_path: None
 train_dataset:
@@ -16,7 +16,7 @@ train_dataset:
         spk_utt: 100
 trainer:
         max_epochs: 15
-        gpus: 3
+        gpus: 1
         accelerator: dp
         check_val_every_n_epoch: 1
 feature: 
@@ -34,8 +34,10 @@ backbone:
         n_mels: 64
         pooling_type: "TSP"
 loss:
-        name: "center_softmax"
+        name: "center_am"
         embedding_dim: 256
+        margin: 30
+        scale: 0.2
 optim:
         name: "Adam"
         lr: 0.001
