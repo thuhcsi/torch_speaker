@@ -34,9 +34,16 @@ class center_loss(nn.Module):
         assert x.size()[1] == self.embedding_dim
 
         centers = self.centers_table(label)
-        loss = F.cosine_similarity(x, centers, dim=1, eps=1e-8)
+        loss1 = F.cosine_similarity(x, centers, dim=1, eps=1e-8)
 
-        return loss.mean()
+        denom = torch.pow(torch.norm(self.centers_table.weight.clone(), dim=1), 2)
+        denom = torch.clamp(denom, 1e-4)
+        out = self.centers_table.weight.clone() @ self.centers_table.weight.clone().T / denom
+        eye = torch.eye(out.shape[0])
+        loss2 = F.mse_loss(out, eye)
+
+        loss = loss1.mean() + loss2
+        return loss
 
 
 class center_softmax(nn.Module):

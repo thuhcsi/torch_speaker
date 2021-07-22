@@ -33,8 +33,22 @@ class Train_Dataset(Dataset):
         self.second = second
 
         df = pd.read_csv(train_csv_path)
-        self.labels = df["utt_spk_int_labels"].values
-        self.paths = df["utt_paths"].values
+        data_labels = df["utt_spk_int_labels"].values
+        data_paths = df["utt_paths"].values
+
+        table = {}
+        for idx, label in enumerate(data_labels):
+            if label not in table:
+                table[label] = []
+            table[label].append(data_paths[idx])
+
+        self.labels = []
+        self.paths = []
+        for _ in range(spk_utt):
+            for key, val in table.items():
+                idx = random.randint(0, len(val)-1)
+                self.labels.append(key)
+                self.paths.append(val[idx])
 
         print("Train Dataset load {} speakers".format(len(set(self.labels))))
         print("Train Dataset load {} utterance".format(len(self.labels)))
